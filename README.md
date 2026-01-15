@@ -1,74 +1,95 @@
 # RAG Note Taker
 
-A powerful Django-based application that combines RAG (Retrieval-Augmented Generation) capabilities with a robust note-taking system. This application allows users to upload documents, chat with them using Google's Gemini 2.5 Flash model, and seamlessley take notes within the same interface.
+**RAG Note Taker** is a next-generation productivity tool that bridges the gap between document analysis and personal knowledge management. By leveraging Retrieval-Augmented Generation (RAG) and Google's powerful **Gemini 2.5 Flash** model, it allows users to have intelligent, context-aware conversations with their documents while simultaneously maintaining personal notes.
 
-## Features
+## 🚀 Features
 
-- **RAG Chatbot**: Chat with your documents (PDF, DOCX, TXT) using advanced AI.
-- **Document Management**: Upload and index documents for semantic search (ChromaDB).
-- **Smart Note Taking**: Create, edit, and organize notes.
-- **User Authentication**: Secure login and registration system.
-- **Responsive Design**: Modern UI with dark/light themes.
+- **🧠 Advanced RAG Chatbot**
+  - Upload generic documents (PDF, DOCX, TXT) and instantly chat with them.
+  - Answers are generated purely based on your document context, effectively reducing hallucinations.
+  - Powered by **Google Gemini 2.5 Flash**, **Haystack**, and **ChromaDB**.
 
-## Tech Stack
+- **📝 Smart Note Taking**
+  - A fully integrated note-taking module.
+  - Create, read, update, and delete (CRUD) notes without leaving the application.
+  - Organize your thoughts alongside your research.
 
-- **Backend**: Django, Python
-- **AI/ML**: Google Gemini 2.5 Flash, Haystack, ChromaDB, Sentence Transformers
-- **Frontend**: HTML5, CSS3, JavaScript
-- **Database**: SQLite (Dev), PostgreSQL (Prod ready)
+- **🔒 Secure & Private**
+  - Complete user authentication system (Login/Register).
+  - User-isolated data: Your documents and notes are only accessible to you.
 
-## Installation
+- **🎨 Modern Interface**
+  - Clean, responsive Dark Mode design.
+  - Intuitive drag-and-drop file uploads.
+  - Real-time chat interface with history.
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Saransh-aggarwal/RAG-Note-Taker.git
-   cd RAG-Note-Taker
-   ```
+## 🛠️ Technology Stack
 
-2. **Create and activate a virtual environment**
-   ```bash
-   # Windows
-   python -m venv venv
-   .\venv\Scripts\activate
+- **Backend**: Django 5.x (Python)
+- **AI Engine**: Google Gemini API (Visual & Text)
+- **Vector Store**: ChromaDB
+- **Orchestration**: Haystack 2.x
+- **Frontend**: HTML5, Vanilla CSS3 (Custom Design System), JavaScript
+- **Database**: SQLite (Development) / PostgreSQL (Production supported)
 
-   # Linux/Mac
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+## ⚙️ Installation & Setup
 
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+Follow these steps to get the project running locally:
 
-4. **Environment Setup**
-   Create a `.env` file in the root directory with the following variables:
-   ```env
-   SECRET_KEY=your_django_secret_key
-   DEBUG=True
-   GOOGLE_API_KEY=your_google_gemini_api_key
-   ```
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Saransh-aggarwal/RAG-Note-Taker.git
+cd RAG-Note-Taker
+```
 
-5. **Run Migrations**
-   ```bash
-   python manage.py migrate
-   ```
+### 2. Set Up Virtual Environment
+```bash
+# Windows
+python -m venv venv
+.\venv\Scripts\activate
 
-6. **Start the Development Server**
-   ```bash
-   python manage.py runserver
-   ```
+# macOS/Linux
+python3 -m venv venv
+source venv/bin/activate
+```
 
-## Screenshots
+### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
 
-### Login Page
+### 4. Configure Environment Variables
+Create a `.env` file in the root directory and add your credentials:
+```env
+# Django Settings
+SECRET_KEY=your_secret_key_here
+DEBUG=True
+
+# Google Gemini API Key
+GOOGLE_API_KEY=your_google_api_key_here
+```
+
+### 5. Initialize Database
+```bash
+python manage.py migrate
+```
+
+### 6. Run the Application
+```bash
+python manage.py runserver
+```
+Visit `http://127.0.0.1:8000` in your browser.
+
+## 📸 Screenshots
+
+### 🔑 Secure Login
 ![Login Page](Screenshot/Login.png)
 
-### Documents Management
-![Document Management](Screenshot/Document.png)
+### 📂 Document Management
+![Document Dashboard](Screenshot/Document.png)
 
-### RAG Chat Interface
-![Chat Interface](Screenshot/Chat.png)
+### 💬 Intelligent Chat Interface
+![RAG Chat](Screenshot/Chat.png)
 
-### Note Taking
-![Notes](Screenshot/Notes.png)
+### 🗒️ Personal Notes
+![Note Taking](Screenshot/Notes.png)
