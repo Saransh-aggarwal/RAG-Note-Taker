@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ note.title }} - RAG Chatbot{% endblock %}
+
+{% block content %}
+<div class="documents-container" style="max-width: 800px;">
+    <div class="documents-header"
+        style="text-align: left; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <h1 style="margin: 0;">{{ note.title }}</h1>
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="{% url 'notes:update' note.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+                <a href="{% url 'notes:list' %}" class="btn btn-secondary btn-sm">Back</a>
+            </div>
+        </div>
+        <p style="color: var(--text-secondary);">
+            Last updated: {{ note.updated_at|date:"F d, Y H:i" }}
+        </p>
+    </div>
+
+    <div class="note-content"
+        style="background: var(--surface); padding: 2rem; border-radius: var(--radius); border: 1px solid var(--border-color); white-space: pre-wrap; font-size: 1.1rem; line-height: 1.8;">
+        {{ note.content }}
+    </div>
+</div>
+{% endblock %}

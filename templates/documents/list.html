@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Documents - RAG Chatbot{% endblock %}
+
+{% block content %}
+<div class="documents-container">
+    <div class="documents-header">
+        <h1>📄 Your Documents</h1>
+        <p>Upload documents to use in your RAG-powered conversations</p>
+    </div>
+
+    <div class="upload-section">
+        <form method="post" action="{% url 'documents:upload' %}" enctype="multipart/form-data" class="upload-form">
+            {% csrf_token %}
+            <div class="upload-area" id="upload-area">
+                <div class="upload-icon">📁</div>
+                <p>Drag & drop files here or click to browse</p>
+                <p class="upload-hint">Supported: PDF, DOCX, TXT (max 10MB)</p>
+                <input type="file" name="file" id="file-input" accept=".pdf,.docx,.txt" multiple required>
+            </div>
+            <button type="submit" class="btn btn-primary" id="upload-btn" disabled>
+                Upload Document
+            </button>
+        </form>
+    </div>
+
+    <div class="documents-list">
+        <h2>Uploaded Documents</h2>
+        {% if documents %}
+        <div class="documents-grid">
+            {% for doc in documents %}
+            <div class="document-card">
+                <div class="doc-body">
+                    <div class="doc-icon">
+                        {% if doc.file_extension == 'pdf' %}📕
+                        {% elif doc.file_extension == 'docx' %}📘
+                        {% else %}📄{% endif %}
+                    </div>
+                    <div class="doc-info">
+                        <h3 class="doc-name" title="{{ doc.name }}">{{ doc.name }}</h3>
+                        <p class="doc-date">Uploaded {{ doc.created_at|date:"M d, Y" }}</p>
+                    </div>
+                </div>
+                <div class="doc-footer">
+                    <div class="doc-status">
+                        {% if doc.is_indexed %}
+                        <span class="badge badge-success">Indexed</span>
+                        {% else %}
+                        <span class="badge badge-warning">Pending</span>
+                        {% endif %}
+                    </div>
+                    <form method="post" action="{% url 'documents:delete' doc.pk %}" class="doc-actions">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Delete {{ doc.name }}?')">
+                            🗑️ Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>No documents yet. Upload your first document above!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        const $uploadArea = $('#upload-area');
+        const $fileInput = $('#file-input');
+        const $uploadBtn = $('#upload-btn');
+
+        // File input change
+        $fileInput.on('change', function () {
+            if (this.files.length > 0) {
+                if (this.files.length === 1) {
+                    $uploadArea.find('p:first').text(this.files[0].name);
+                } else {
+                    $uploadArea.find('p:first').text(this.files.length + ' files selected');
+                }
+                $uploadBtn.prop('disabled', false);
+            }
+        });
+
+        // Click to upload
+        $uploadArea.on('click', function (e) {
+            if (e.target !== $fileInput[0]) {
+                $fileInput.click();
+            }
+        });
+
+        // Drag and drop
+        $uploadArea.on('dragover', function (e) {
+            e.preventDefault();
+            $(this).addClass('drag-over');
+        });
+
+        $uploadArea.on('dragleave', function (e) {
+            e.preventDefault();
+            $(this).removeClass('drag-over');
+        });
+
+        $uploadArea.on('drop', function (e) {
+            e.preventDefault();
+            $(this).removeClass('drag-over');
+            const files = e.originalEvent.dataTransfer.files;
+            if (files.length > 0) {
+                $fileInput[0].files = files;
+                $fileInput.trigger('change');
+            }
+        });
+    });
+</script>
+{% endblock %}

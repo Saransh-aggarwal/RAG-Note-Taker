@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat - RAG Chatbot{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <div class="chat-sidebar">
+        <h3>📚 Select Documents</h3>
+
+        <div class="document-selector">
+            {% if documents %}
+            <div class="select-all-container">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="select-all" checked>
+                    <span>Select All</span>
+                </label>
+            </div>
+
+            <div class="document-checkboxes">
+                {% for doc in documents %}
+                <label class="checkbox-label doc-checkbox">
+                    <input type="checkbox" name="document" value="{{ doc.id }}" class="doc-check" checked>
+                    <span class="doc-label" title="{{ doc.name }}">
+                        {% if doc.file_extension == 'pdf' %}
+                        📕
+                        {% elif doc.file_extension == 'docx' %}
+                        📘
+                        {% else %}
+                        📄
+                        {% endif %}
+                        {{ doc.name|truncatechars:25 }}
+                    </span>
+                </label>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-docs-message">
+                <p>No documents uploaded yet.</p>
+                <a href="{% url 'documents:list' %}" class="btn btn-secondary btn-sm">
+                    Upload Documents
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="sidebar-actions">
+            <button type="button" id="clear-history-btn" class="btn btn-secondary btn-sm">
+                🗑️ Clear History
+            </button>
+        </div>
+    </div>
+
+    <div class="chat-main">
+        <div class="chat-messages" id="chat-messages">
+            {% if chat_messages %}
+            {% for msg in chat_messages %}
+            <div class="message message-{{ msg.role }}">
+                <div class="message-avatar">
+                    {% if msg.role == 'user' %}👤{% else %}🤖{% endif %}
+                </div>
+                <div class="message-content">
+                    <div class="message-text">{{ msg.content|linebreaks }}</div>
+                    <div class="message-time">
+                        {{ msg.created_at|date:"g:i A" }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="chat-welcome" id="chat-welcome">
+                <div class="welcome-icon">💬</div>
+                <h2>Welcome to RAG Chatbot</h2>
+                <p>Select documents and ask questions about them.</p>
+                <p class="hint">Your chat history is kept for 24 hours.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="chat-input-area">
+            <form id="chat-form" class="chat-form">
+                {% csrf_token %}
+                <div class="input-wrapper">
+                    <textarea name="message" id="message-input" placeholder="Ask a question about your documents..."
+                        rows="1" required></textarea>
+                    <button type="submit" id="send-btn" class="btn btn-primary">
+                        <span class="btn-text">Send</span>
+                        <span class="btn-loading" style="display:none;">...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        const $chatMessages = $('#chat-messages');
+        const $chatForm = $('#chat-form');
+        const $messageInput = $('#message-input');
+        const $sendBtn = $('#send-btn');
+        const $clearBtn = $('#clear-history-btn');
+        const $selectAll = $('#select-all');
+        const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+        // Scroll to bottom
+        function scrollToBottom() {
+            $chatMessages.scrollTop($chatMessages[0].scrollHeight);
+        }
+        scrollToBottom();
+
+        // Auto-resize textarea
+        $messageInput.on('input', function () {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+        });
+
+        // Enter to send (Shift+Enter for new line)
+        $messageInput.on('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                $chatForm.submit();
+            }
+        });
+
+        // Select all documents
+        $selectAll.on('change', function () {
+            $('.doc-check').prop('checked', this.checked);
+        });
+
+        // Update select all state
+        $('.doc-check').on('change', function () {
+            const total = $('.doc-check').length;
+            const checked = $('.doc-check:checked').length;
+            $selectAll.prop('checked', total === checked);
+        });
+
+        // Add message to chat
+        function addMessage(role, content) {
+            const avatar = role === 'user' ? '👤' : '🤖';
+            const time = new Date().toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+
+            // Remove welcome message if present
+            $('#chat-welcome').remove();
+
+            const $message = $(`
+            <div class="message message-${role}">
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">
+                    <div class="message-text">${content.replace(/\n/g, '<br>')}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            </div>
+        `);
+
+            $chatMessages.append($message);
+            scrollToBottom();
+        }
+
+        // Submit chat form
+        $chatForm.on('submit', function (e) {
+            e.preventDefault();
+
+            const message = $messageInput.val().trim();
+            if (!message) return;
+
+            // Get selected document IDs
+            const documentIds = [];
+            $('.doc-check:checked').each(function () {
+                documentIds.push(parseInt($(this).val()));
+            });
+
+            if (documentIds.length === 0) {
+                alert('Please select at least one document.');
+                return;
+            }
+
+            // Add user message
+            addMessage('user', message);
+
+            // Clear input and disable
+            $messageInput.val('').css('height', 'auto');
+            $sendBtn.prop('disabled', true);
+            $sendBtn.find('.btn-text').hide();
+            $sendBtn.find('.btn-loading').show();
+
+            // Send AJAX request
+            $.ajax({
+                url: '{% url "chat:send" %}',
+                method: 'POST',
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                data: JSON.stringify({
+                    message: message,
+                    document_ids: documentIds
+                }),
+                success: function (response) {
+                    if (response.success) {
+                        addMessage('assistant', response.message.content);
+                    } else {
+                        addMessage('assistant', 'Error: ' + response.error);
+                    }
+                },
+                error: function (xhr) {
+                    let errorMsg = 'An error occurred. Please try again.';
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.error) errorMsg = response.error;
+                    } catch (e) { }
+                    addMessage('assistant', 'Error: ' + errorMsg);
+                },
+                complete: function () {
+                    $sendBtn.prop('disabled', false);
+                    $sendBtn.find('.btn-text').show();
+                    $sendBtn.find('.btn-loading').hide();
+                    $messageInput.focus();
+                }
+            });
+        });
+
+        // Clear history
+        $clearBtn.on('click', function () {
+            if (!confirm('Clear all chat history?')) return;
+
+            $.ajax({
+                url: '{% url "chat:clear" %}',
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                success: function () {
+                    $chatMessages.html(`
+                    <div class="chat-welcome" id="chat-welcome">
+                        <div class="welcome-icon">💬</div>
+                        <h2>Welcome to RAG Chatbot</h2>
+                        <p>Select documents and ask questions about them.</p>
+                        <p class="hint">Your chat history is kept for 24 hours.</p>
+                    </div>
+                `);
+                },
+                error: function () {
+                    alert('Failed to clear history. Please try again.');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

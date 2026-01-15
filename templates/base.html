@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RAG Chatbot{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="{% url 'home' %}">📚 RAG Chatbot</a>
+        </div>
+        <div class="nav-links">
+            {% if user.is_authenticated %}
+            <span class="nav-user">Hello, {{ user.username }}</span>
+            <a href="{% url 'chat:chat' %}" class="nav-link">Chat</a>
+            <a href="{% url 'documents:list' %}" class="nav-link">Documents</a>
+            <a href="{% url 'notes:list' %}" class="nav-link">Notes</a>
+            <a href="{% url 'accounts:logout' %}" class="nav-link btn-logout">Logout</a>
+            {% else %}
+            <a href="{% url 'accounts:login' %}" class="nav-link">Login</a>
+            <a href="{% url 'accounts:register' %}" class="nav-link">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+                <button class="alert-close">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 RAG Chatbot V1</p>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="/static/js/main.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

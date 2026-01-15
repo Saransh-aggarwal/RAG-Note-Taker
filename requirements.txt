@@ -1,0 +1,10 @@
+django>=5.0
+psycopg2-binary
+haystack-ai
+chroma-haystack
+pypdf
+python-docx
+python-dotenv
+whitenoise
+dj-database-url
+google-genai

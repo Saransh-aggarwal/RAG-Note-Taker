@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Note - RAG Chatbot{% endblock %}
+
+{% block content %}
+<div class="auth-container" style="min-height: auto; padding: 2rem 0;">
+    <div class="auth-card" style="max-width: 800px;">
+        <h1>{{ action }} Note</h1>
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="form-errors">
+                {% for error in form.non_field_errors %}
+                <div class="error">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                <span class="form-help">{{ field.help_text }}</span>
+                {% endif %}
+                {% if field.errors %}
+                <div class="form-errors">
+                    {% for error in field.errors %}
+                    <div class="error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="form-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary btn-full">Save Note</button>
+                <a href="{% url 'notes:list' %}" class="btn btn-secondary btn-full"
+                    style="text-align: center;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
